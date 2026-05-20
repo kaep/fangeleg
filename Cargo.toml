@@ -1,0 +1,6 @@
+[package]
+name = "fangeleg"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
