@@ -21,5 +21,5 @@ fn main() {
         }
     }
 
-    sim.run();
+    sim.run_iterations(5);
 }

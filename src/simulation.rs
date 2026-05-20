@@ -153,15 +153,16 @@ impl Simulation {
         // TODO: pick a random agent to be tagged
         // also: track who is currently it and who was the
         // previous tagger as to not swap.
-        // counter is just for debugging
-        let mut counter = 0;
         loop {
-            if counter == 5 {
-                break;
-            }
             self.tick();
             self.show_grid();
-            counter += 1;
+        }
+    }
+
+    pub fn run_iterations(&mut self, iterations: usize) {
+        for _ in 0..iterations {
+            self.tick();
+            self.show_grid();
         }
     }
 }
