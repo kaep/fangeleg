@@ -83,23 +83,37 @@ impl Simulation {
         Ok(())
     }
 
-    // TODO: return a result representing to represent out of bounds errors correctly
-    fn apply_action(&mut self, Point2D { x, y }: Point2D, action: AgentAction) {
+    fn apply_action(
+        &mut self,
+        Point2D { x, y }: Point2D,
+        action: AgentAction,
+    ) -> Result<(), SimulationError> {
         match action {
             // TODO: match struct instead of dotting into fields?
             AgentAction::Move(move_to) => {
                 // Bounds check the new position
                 if move_to.x >= self.cols || move_to.y >= self.rows {
-                    return;
+                    return Err(SimulationError::OutOfBounds(move_to));
+                }
+
+                // Trying to move to the source position is a no-op
+                if move_to.x == x && move_to.y == y {
+                    return Ok(());
+                }
+
+                // Trying to move to an occupied position should fail
+                if self.grid[move_to.y][move_to.x].is_some() {
+                    return Err(SimulationError::CellOccupied(move_to));
                 }
 
                 // Take out the agent from the current position
                 let agent = self.grid[y][x].take();
                 // New position is valid: move the agent to it
                 self.grid[move_to.y][move_to.x] = agent;
+                Ok(())
             }
             AgentAction::Tag => todo!(),
-            AgentAction::Stay => (),
+            AgentAction::Stay => Ok(()),
         }
     }
 
@@ -114,7 +128,7 @@ impl Simulation {
                         can_tag: false,
                     };
                     let action = agent.act(input);
-                    self.apply_action(point, action);
+                    let _ = self.apply_action(point, action);
                 }
             }
         }
