@@ -19,8 +19,10 @@ pub trait Agent {
     fn act(&self, input: AgentInput) -> AgentAction;
 }
 
+pub struct AgentId(u32);
+
 pub struct AgentEntry {
-    pub id: u32,
+    pub id: AgentId,
     pub agent: Box<dyn Agent>,
 }
 
@@ -57,6 +59,13 @@ impl Simulation {
         }
     }
 
+    fn next_agent_id(&mut self) -> AgentId {
+        let id = AgentId(self.next_agent_id);
+        // Note: Can technically overflow
+        self.next_agent_id += 1;
+        id
+    }
+
     pub fn place_agent(
         &mut self,
         agent: Box<dyn Agent>,
@@ -74,12 +83,10 @@ impl Simulation {
         }
 
         self.grid[y][x] = Some(AgentEntry {
-            id: self.next_agent_id,
+            id: self.next_agent_id(),
             agent,
         });
 
-        // Note: Can technically overflow
-        self.next_agent_id += 1;
         Ok(())
     }
 
