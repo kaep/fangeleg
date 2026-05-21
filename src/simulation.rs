@@ -69,7 +69,7 @@ impl Simulation {
             return Err(SimulationError::OutOfBounds(point));
         }
 
-        if let Some(_) = self.grid[y][x] {
+        if self.grid[y][x].is_some() {
             return Err(SimulationError::CellOccupied(point));
         }
 
@@ -138,7 +138,7 @@ impl Simulation {
         println!("┌{}┐", "─".repeat(self.cols));
         for y in 0..self.rows {
             for x in 0..self.cols {
-                if let Some(_) = self.grid[y][x] {
+                if self.grid[y][x].is_some() {
                     print!("x");
                 } else {
                     print!(".");
