@@ -280,3 +280,287 @@ impl Simulation {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct TestAgent;
+
+    impl Agent for TestAgent {
+        fn act(&self, _input: AgentInput) -> AgentAction {
+            AgentAction::Stay
+        }
+    }
+
+    fn test_agent() -> Box<dyn Agent> {
+        Box::new(TestAgent)
+    }
+
+    fn agent_id_at(sim: &Simulation, x: usize, y: usize) -> AgentId {
+        sim.grid[y][x]
+            .as_ref()
+            .expect("expected agent at position")
+            .id
+    }
+
+    #[test]
+    fn place_agent_returns_error_when_x_out_of_bounds() {
+        let mut sim = Simulation::new(2, 3);
+
+        let result = sim.place_agent(test_agent(), 3, 0);
+
+        assert!(matches!(
+            result,
+            Err(SimulationError::OutOfBounds(Point2D { x: 3, y: 0 }))
+        ));
+    }
+
+    #[test]
+    fn place_agent_returns_error_when_y_out_of_bounds() {
+        let mut sim = Simulation::new(2, 3);
+
+        let result = sim.place_agent(test_agent(), 0, 2);
+
+        assert!(matches!(
+            result,
+            Err(SimulationError::OutOfBounds(Point2D { x: 0, y: 2 }))
+        ));
+    }
+
+    #[test]
+    fn place_agent_returns_error_when_cell_is_occupied() {
+        let mut sim = Simulation::new(2, 3);
+
+        assert!(sim.place_agent(test_agent(), 1, 1).is_ok());
+
+        let result = sim.place_agent(test_agent(), 1, 1);
+
+        assert!(matches!(
+            result,
+            Err(SimulationError::CellOccupied(Point2D { x: 1, y: 1 }))
+        ));
+    }
+
+    #[test]
+    fn move_action_succeeds_when_destination_cell_is_empty() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Move(Point2D { x: 1, y: 0 }),
+        );
+
+        assert!(result.is_ok());
+        assert!(sim.grid[0][0].is_none());
+        assert!(sim.grid[0][1].is_some());
+    }
+
+    #[test]
+    fn move_out_of_bounds_returns_error_and_keeps_agent_in_original_cell() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 2, 1).unwrap();
+
+        let result = sim.apply_action(
+            Point2D { x: 2, y: 1 },
+            AgentAction::Move(Point2D { x: 3, y: 1 }),
+        );
+
+        assert!(matches!(
+            result,
+            Err(SimulationError::OutOfBounds(Point2D { x: 3, y: 1 }))
+        ));
+        assert!(sim.grid[1][2].is_some());
+    }
+
+    #[test]
+    fn move_into_occupied_cell_fails_without_overwriting() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let original_target_id = agent_id_at(&sim, 1, 0);
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Move(Point2D { x: 1, y: 0 }),
+        );
+
+        assert!(matches!(
+            result,
+            Err(SimulationError::CellOccupied(Point2D { x: 1, y: 0 }))
+        ));
+        assert!(sim.grid[0][0].is_some());
+        assert_eq!(agent_id_at(&sim, 1, 0), original_target_id);
+    }
+
+    #[test]
+    fn move_to_own_cell_is_noop() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 1, 1).unwrap();
+        let original_id = agent_id_at(&sim, 1, 1);
+
+        let result = sim.apply_action(
+            Point2D { x: 1, y: 1 },
+            AgentAction::Move(Point2D { x: 1, y: 1 }),
+        );
+
+        assert!(result.is_ok());
+        assert_eq!(agent_id_at(&sim, 1, 1), original_id);
+    }
+
+    #[test]
+    fn non_tagger_has_no_taggable_positions() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let non_tagger_id = agent_id_at(&sim, 0, 0);
+        sim.current_tagger = Some(agent_id_at(&sim, 1, 0));
+
+        let taggable_positions = sim.find_taggable_positions(non_tagger_id, Point2D { x: 0, y: 0 });
+
+        assert!(taggable_positions.is_empty());
+    }
+
+    #[test]
+    fn tagger_has_adjacent_occupied_position_as_taggable() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let tagger_id = agent_id_at(&sim, 0, 0);
+        sim.current_tagger = Some(tagger_id);
+
+        let taggable_positions = sim.find_taggable_positions(tagger_id, Point2D { x: 0, y: 0 });
+
+        assert_eq!(taggable_positions, vec![Point2D { x: 1, y: 0 }]);
+    }
+
+    #[test]
+    fn tagger_with_no_adjacent_occupied_positions_gets_no_taggable_positions() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 1, 1).unwrap();
+
+        let tagger_id = agent_id_at(&sim, 1, 1);
+        sim.current_tagger = Some(tagger_id);
+
+        let taggable_positions = sim.find_taggable_positions(tagger_id, Point2D { x: 1, y: 1 });
+
+        assert!(taggable_positions.is_empty());
+    }
+
+    #[test]
+    fn tagger_does_not_get_adjacent_tagback_immune_agent_as_taggable() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let current_tagger_id = agent_id_at(&sim, 0, 0);
+        let immune_id = agent_id_at(&sim, 1, 0);
+
+        sim.current_tagger = Some(current_tagger_id);
+        sim.tagback_immune_agent = Some(immune_id);
+
+        let taggable_positions =
+            sim.find_taggable_positions(current_tagger_id, Point2D { x: 0, y: 0 });
+
+        assert!(taggable_positions.is_empty());
+    }
+
+    #[test]
+    fn valid_tag_updates_current_tagger_to_target_agent() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let original_tagger_id = agent_id_at(&sim, 0, 0);
+        let target_id = agent_id_at(&sim, 1, 0);
+
+        sim.current_tagger = Some(original_tagger_id);
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Tag(Point2D { x: 1, y: 0 }),
+        );
+
+        assert!(result.is_ok());
+        assert_eq!(sim.current_tagger, Some(target_id));
+    }
+
+    #[test]
+    fn valid_tag_makes_old_tagger_tagback_immune() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let original_tagger_id = agent_id_at(&sim, 0, 0);
+
+        sim.current_tagger = Some(original_tagger_id);
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Tag(Point2D { x: 1, y: 0 }),
+        );
+
+        assert!(result.is_ok());
+        assert_eq!(sim.tagback_immune_agent, Some(original_tagger_id));
+    }
+
+    #[test]
+    fn tag_from_non_tagger_is_ignored() {
+        let mut sim = Simulation::new(2, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 1, 0).unwrap();
+
+        let non_tagger_id = agent_id_at(&sim, 0, 0);
+        let actual_tagger_id = agent_id_at(&sim, 1, 0);
+
+        sim.current_tagger = Some(actual_tagger_id);
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Tag(Point2D { x: 1, y: 0 }),
+        );
+
+        assert!(result.is_ok());
+        assert_eq!(sim.current_tagger, Some(actual_tagger_id));
+        assert_eq!(sim.tagback_immune_agent, None);
+        assert_ne!(sim.current_tagger, Some(non_tagger_id));
+    }
+
+    #[test]
+    fn tag_to_non_adjacent_target_is_ignored() {
+        let mut sim = Simulation::new(3, 3);
+
+        sim.place_agent(test_agent(), 0, 0).unwrap();
+        sim.place_agent(test_agent(), 2, 2).unwrap();
+
+        let tagger_id = agent_id_at(&sim, 0, 0);
+        let target_id = agent_id_at(&sim, 2, 2);
+
+        sim.current_tagger = Some(tagger_id);
+
+        let result = sim.apply_action(
+            Point2D { x: 0, y: 0 },
+            AgentAction::Tag(Point2D { x: 2, y: 2 }),
+        );
+
+        assert!(result.is_ok());
+        assert_eq!(sim.current_tagger, Some(tagger_id));
+        assert_ne!(sim.current_tagger, Some(target_id));
+        assert_eq!(sim.tagback_immune_agent, None);
+    }
+}
