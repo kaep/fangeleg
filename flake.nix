@@ -18,12 +18,15 @@
           pkgs = import nixpkgs {
             inherit system overlays;
           };
+	  rustToolChain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
         in
         with pkgs;
         {
           devShells.default = mkShell {
             buildInputs = [
-                rust-bin.stable.latest.default
+                rustToolChain
+		just
+		wasm-bindgen-cli_0_2_108
             ];
           };
         }
