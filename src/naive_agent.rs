@@ -12,9 +12,19 @@ enum Direction {
 pub struct NaiveAgent {}
 
 impl Agent for NaiveAgent {
-    fn act(&self, AgentInput { position, can_tag }: AgentInput) -> AgentAction {
-        if can_tag {
-            return AgentAction::Tag;
+    fn act(
+        &self,
+        AgentInput {
+            position,
+            taggable_positions,
+        }: AgentInput,
+    ) -> AgentAction {
+        if !taggable_positions.is_empty() {
+            let wants_to_tag = random_bool(0.5);
+            if wants_to_tag {
+                let target = taggable_positions[random_range(0..taggable_positions.len())];
+                return AgentAction::Tag(target);
+            }
         }
         let wants_to_move = random_bool(0.5);
         if wants_to_move {
