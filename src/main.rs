@@ -13,9 +13,9 @@ fn main() {
     for _ in 0..num_agents {
         // Loop until all agents are placed successfully
         loop {
-            let row = rand::random_range(0..rows);
-            let col = rand::random_range(0..cols);
-            if sim.place_agent(Box::new(NaiveAgent {}), row, col).is_ok() {
+            let x = rand::random_range(0..cols);
+            let y = rand::random_range(0..rows);
+            if sim.place_agent(Box::new(NaiveAgent {}), x, y).is_ok() {
                 break;
             }
         }
