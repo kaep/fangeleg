@@ -8,11 +8,13 @@ pub struct Point2D {
     pub y: usize,
 }
 
+#[derive(Debug)]
 pub struct AgentInput {
     pub position: Point2D,
     pub taggable_positions: Vec<Point2D>,
 }
 
+#[derive(Clone, Copy)]
 pub enum AgentAction {
     Move(Point2D),
     Tag(Point2D),
