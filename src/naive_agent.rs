@@ -9,7 +9,7 @@ enum Direction {
     Right,
 }
 
-pub struct NaiveAgent {}
+pub struct NaiveAgent;
 
 impl Agent for NaiveAgent {
     fn act(
