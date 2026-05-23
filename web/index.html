@@ -20,11 +20,34 @@
     <canvas id="simulation"></canvas>
 
     <script type="module">
-      import init, { WasmSimulation } from "../bindgen-out/fangeleg.js";
+      import init, { WasmSimulation, stayAction, moveAction, tagAction } from "../bindgen-out/fangeleg.js";
 
       await init();
 
+      // An example JsAgent that always tags the first taggable position, or moves down if none are available
+      function jsAgentExample(input) {
+          const position = input.position;
+
+          // If there are taggable positions, take the first one
+          if (input.taggablePositionCount() > 0) {
+              const target = input.taggablePositionAt(0);
+
+              return tagAction(target.x, target.y);
+          }
+
+          // Otherwise move down
+          return moveAction(position.x, position.y+1);
+      }
+
+      // A lazy JsAgent that always stays in place
+      function lazyJsAgent(input) {
+          return stayAction();
+      }
+
       const sim = new WasmSimulation("simulation", 30, 30, 40, 20);
+
+      sim.place_js_agent(0, 0, jsAgentExample);
+      sim.place_js_agent(0, 6, lazyJsAgent);
 
       setInterval(() => {
         sim.step();
@@ -32,4 +55,3 @@
     </script>
   </body>
 </html>
-
