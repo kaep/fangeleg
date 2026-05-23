@@ -2,6 +2,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
+use crate::js_agent::JsAgent;
 use crate::naive_agent::NaiveAgent;
 use crate::simulation::{CellState, Simulation};
 
@@ -89,6 +90,12 @@ impl WasmSimulation {
         self.draw_grid();
         self.draw_agents();
         self.draw_legend();
+    }
+
+    pub fn place_js_agent(&mut self, x: usize, y: usize, act_function: js_sys::Function) -> bool {
+        self.simulation
+            .place_agent(Box::new(JsAgent::new(act_function)), x, y)
+            .is_ok()
     }
 }
 
