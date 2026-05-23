@@ -13,3 +13,10 @@ bindgen:
 
 serve:
     miniserve . --index web/index.html
+
+clean:
+    rm -rf bindgen-out/
+
+clean-all:
+    just clean
+    cargo clean
