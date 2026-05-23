@@ -93,9 +93,17 @@ impl WasmSimulation {
     }
 
     pub fn place_js_agent(&mut self, x: usize, y: usize, act_function: js_sys::Function) -> bool {
-        self.simulation
+        let placed = self
+            .simulation
             .place_agent(Box::new(JsAgent::new(act_function)), x, y)
-            .is_ok()
+            .is_ok();
+
+        if placed {
+            self.simulation.ensure_tagger_chosen();
+            self.draw();
+        }
+
+        placed
     }
 }
 
