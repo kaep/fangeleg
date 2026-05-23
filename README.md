@@ -6,7 +6,7 @@ Fangeleg is a small simulator for an agent-based model where agents play the gam
 
 Agents are simulated as autonomous entities that move around a 2D grid and tag each other. At each step of the simulation, agents can move, tag, or remain stationary. Agent behavior is defined via  trait, which allows for custom agent implementations.
 
-The project also includes a web-based visualization of the simulation running in WebAssembly.
+The project also includes a web-based visualization of the simulation running in WebAssembly and an API for defining custom agent behaviors using JavaScript.
 
 ## Usage
 `just run` to build the project and serve it locally.
