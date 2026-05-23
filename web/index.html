@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Fangeleg</title>
+    <style>
+      body {
+        background: #020617;
+        color: #e5e7eb;
+        font-family: system-ui, sans-serif;
+      }
+
+      canvas {
+        border: 1px solid #475569;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Fangeleg</h1>
+    <canvas id="simulation"></canvas>
+
+    <script type="module">
+      import init, { WasmSimulation } from "../bindgen-out/fangeleg.js";
+
+      await init();
+
+      const sim = new WasmSimulation("simulation", 30, 30, 40, 20);
+
+      setInterval(() => {
+        sim.step();
+      }, 150);
+    </script>
+  </body>
+</html>
+

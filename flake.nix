@@ -27,6 +27,7 @@
                 rustToolChain
 		just
 		wasm-bindgen-cli_0_2_108
+		miniserve
             ];
           };
         }

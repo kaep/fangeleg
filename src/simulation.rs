@@ -41,6 +41,14 @@ pub enum SimulationError {
     OutOfBounds(Point2D),
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CellState {
+    Empty,
+    Agent,
+    Tagger,
+    TagbackImmune,
+}
+
 pub struct Simulation {
     rows: usize,
     cols: usize,
@@ -260,9 +268,7 @@ impl Simulation {
 
     // TODO: reduce duplication in run methods
     pub fn run(&mut self) {
-        // Choose a random tagger to start with
-        // This might make sense to expose to callers at some point.
-        self.choose_random_tagger();
+        self.ensure_tagger_chosen();
 
         loop {
             self.tick();
@@ -271,12 +277,48 @@ impl Simulation {
     }
 
     pub fn run_iterations(&mut self, iterations: usize) {
-        // Choose a random tagger to start with
-        // This might make sense to expose to callers at some point.
-        self.choose_random_tagger();
+        self.ensure_tagger_chosen();
         for _ in 0..iterations {
             self.tick();
             self.show_grid();
+        }
+    }
+
+    pub fn step(&mut self) {
+        self.tick();
+    }
+
+    pub fn rows(&self) -> usize {
+        self.rows
+    }
+
+    pub fn cols(&self) -> usize {
+        self.cols
+    }
+
+    pub fn cell_state(&self, x: usize, y: usize) -> Option<CellState> {
+        if x >= self.cols || y >= self.rows {
+            return None;
+        }
+
+        let Some(agent) = self.grid[y][x].as_ref() else {
+            return Some(CellState::Empty);
+        };
+
+        if Some(agent.id) == self.current_tagger {
+            return Some(CellState::Tagger);
+        }
+
+        if Some(agent.id) == self.tagback_immune_agent {
+            return Some(CellState::TagbackImmune);
+        }
+
+        Some(CellState::Agent)
+    }
+
+    pub fn ensure_tagger_chosen(&mut self) {
+        if self.current_tagger.is_none() {
+            self.choose_random_tagger();
         }
     }
 }
