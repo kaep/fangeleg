@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use rand::random_range;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -21,7 +23,7 @@ pub trait Agent {
     fn act(&self, input: AgentInput) -> AgentAction;
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub struct AgentId(u32);
 
 pub struct AgentEntry {
@@ -215,10 +217,14 @@ impl Simulation {
     }
 
     fn tick(&mut self) {
+        let mut already_acted = HashSet::new();
         for y in 0..self.rows {
             for x in 0..self.cols {
                 let point = Point2D { x, y };
                 if let Some(agent) = self.grid[y][x].as_ref() {
+                    if !already_acted.insert(agent.id) {
+                        continue;
+                    }
                     let input = AgentInput {
                         // Is cloning the point cheaper than creating a new one?
                         position: point,
