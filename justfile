@@ -20,3 +20,8 @@ clean:
 clean-all:
     just clean
     cargo clean
+
+run:
+    just wasm
+    just bindgen
+    just serve
