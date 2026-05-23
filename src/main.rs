@@ -1,8 +1,5 @@
-mod naive_agent;
-pub mod simulation;
-
-use naive_agent::NaiveAgent;
-use simulation::Simulation;
+use fangeleg::naive_agent::NaiveAgent;
+use fangeleg::simulation::Simulation;
 
 fn main() {
     let rows = 30;
