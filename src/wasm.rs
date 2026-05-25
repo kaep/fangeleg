@@ -2,6 +2,7 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
+use crate::competent_agent::CompetentAgent;
 use crate::js_agent::JsAgent;
 use crate::naive_agent::NaiveAgent;
 use crate::simulation::{CellState, Simulation};
@@ -58,11 +59,22 @@ impl WasmSimulation {
                 let x = rand::random_range(0..cols);
                 let y = rand::random_range(0..rows);
 
-                if simulation
-                    .place_agent(Box::new(NaiveAgent {}), x, y)
-                    .is_ok()
-                {
-                    break;
+                // Coin flip to determine whether agent should be competent or naive
+                let is_competent = rand::random::<bool>();
+                if is_competent {
+                    if simulation
+                        .place_agent(Box::new(CompetentAgent {}), x, y)
+                        .is_ok()
+                    {
+                        break;
+                    }
+                } else {
+                    if simulation
+                        .place_agent(Box::new(NaiveAgent {}), x, y)
+                        .is_ok()
+                    {
+                        break;
+                    }
                 }
             }
         }
