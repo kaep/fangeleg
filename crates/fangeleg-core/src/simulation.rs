@@ -276,21 +276,18 @@ impl Simulation {
         self.current_tagger = Some(AgentId(random_agent));
     }
 
-    // TODO: reduce duplication in run methods
     pub fn run(&mut self) {
         self.ensure_tagger_chosen();
 
         loop {
-            self.tick();
-            self.show_grid();
+            self.step_and_show();
         }
     }
 
     pub fn run_iterations(&mut self, iterations: usize) {
         self.ensure_tagger_chosen();
         for _ in 0..iterations {
-            self.tick();
-            self.show_grid();
+            self.step_and_show();
         }
     }
 
@@ -343,6 +340,11 @@ impl Simulation {
                     .collect()
             })
             .collect()
+    }
+
+    fn step_and_show(&mut self) {
+        self.tick();
+        self.show_grid();
     }
 }
 
