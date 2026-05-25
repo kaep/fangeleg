@@ -32,6 +32,7 @@ impl WasmSimulation {
         cols: usize,
         num_agents: usize,
         cell_size: f64,
+        competence_ratio: f64,
     ) -> Result<WasmSimulation, JsValue> {
         let window = web_sys::window().ok_or("missing window")?;
         let document = window.document().ok_or("missing document")?;
@@ -53,14 +54,15 @@ impl WasmSimulation {
 
         let max_agents = rows * cols;
         let num_agents = num_agents.min(max_agents);
+        let competence_ratio = competence_ratio.clamp(0.0, 1.0);
 
         for _ in 0..num_agents {
             loop {
                 let x = rand::random_range(0..cols);
                 let y = rand::random_range(0..rows);
 
-                // Coin flip to determine whether agent should be competent or naive
-                let is_competent = rand::random::<bool>();
+                // Determine whether agent should be competent or naive based on the provided ratio
+                let is_competent = rand::random::<f64>() < competence_ratio;
                 if is_competent {
                     if simulation
                         .place_agent(Box::new(CompetentAgent {}), x, y)

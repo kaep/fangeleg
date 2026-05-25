@@ -13,16 +13,38 @@
       canvas {
         border: 1px solid #475569;
       }
+
+      button {
+        background: #1f2937;
+        color: #e5e7eb;
+        border: 1px solid #475569;
+        padding: 0.5rem 0.75rem;
+        margin: 0 0.25rem 1rem 0;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background: #374151;
+      }
     </style>
   </head>
   <body>
     <h1>Fangeleg</h1>
+    <div>
+        <button id="all-naive">100% naive</button>
+        <button id="split">50/50 split</button>
+        <button id="all-competent">100% competent</button>
+        <button id="add-js">Add JS-defined agent at (0, 0)</button>
+    </div>
     <canvas id="simulation"></canvas>
 
     <script type="module">
       import init, { WasmSimulation, stayAction, moveAction, tagAction } from "../bindgen-out/fangeleg_wasm.js";
 
       await init();
+
+      let intervalId = null;
+      let sim = null;
 
       // An example JsAgent that always tags the first taggable position, or moves down if none are available
       function jsAgentExample(input) {
@@ -44,14 +66,43 @@
           return stayAction();
       }
 
-      const sim = new WasmSimulation("simulation", 30, 30, 40, 20);
+      function startSimulation(competenceRatio) {
+          if (intervalId != null) {
+              clearInterval(intervalId);
+          }
 
-      sim.placeJsAgent(0, 0, jsAgentExample);
-      sim.placeJsAgent(0, 6, lazyJsAgent);
+          const rows = 30;
+          const cols = 30;
+          const agentCount = 40;
+          const cellSize = 20;
+          sim = new WasmSimulation("simulation", rows, cols, agentCount, cellSize, competenceRatio);
 
-      setInterval(() => {
-        sim.step();
-      }, 150);
+          intervalId = setInterval(() => {
+            sim.step();
+          }, 150);
+      }
+
+      document
+        .getElementById("all-naive")
+        .addEventListener("click", () => startSimulation(0.0));
+
+      document
+        .getElementById("split")
+        .addEventListener("click", () => startSimulation(0.5));
+
+      document
+        .getElementById("all-competent")
+        .addEventListener("click", () => startSimulation(1.0));
+
+      // This can fail if (0,0) is already occupied
+      document
+        .getElementById("add-js")
+        .addEventListener("click", () => {
+            sim.placeJsAgent(0, 0, jsAgentExample);
+        });
+
+      startSimulation(0.5);
+
     </script>
   </body>
 </html>
