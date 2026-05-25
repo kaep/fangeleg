@@ -23,36 +23,33 @@ impl Agent for CompetentAgent {
         if is_tagger {
             // If we are the tagger and have no taggable positions, chase nearest possible target
             if let Some(target) = find_nearest_target(&possible_targets, position) {
-                // Find the best move towards the target
-                if let Some(best_move_towards_target) = valid_moves
-                    .iter()
-                    .copied()
-                    .min_by_key(|valid_move| manhattan_distance(*valid_move, target))
-                {
-                    return AgentAction::Move(best_move_towards_target);
-                } else {
-                    // No best move towards target exist, stay
-                    return AgentAction::Stay;
-                }
+                return best_move_towards(&valid_moves, target);
             }
         } else if let Some(tagger_position) = find_tagger_position(&grid_view) {
-            // Find the best move away from the tagger
-            // TODO: repeat of logic above, abstracted into a helper function?
-            if let Some(best_move_away_from_tagger) = valid_moves
-                .iter()
-                .copied()
-                .max_by_key(|valid_move| manhattan_distance(*valid_move, tagger_position))
-            {
-                return AgentAction::Move(best_move_away_from_tagger);
-            } else {
-                // No best move away from tagger exist, stay
-                return AgentAction::Stay;
-            }
+            return best_move_away_from(&valid_moves, tagger_position);
         }
 
         // No valid moves exist, stay
         AgentAction::Stay
     }
+}
+
+fn best_move_towards(valid_moves: &[Point2D], target: Point2D) -> AgentAction {
+    valid_moves
+        .iter()
+        .copied()
+        .min_by_key(|valid_move| manhattan_distance(*valid_move, target))
+        .map(AgentAction::Move)
+        .unwrap_or(AgentAction::Stay)
+}
+
+fn best_move_away_from(valid_moves: &[Point2D], tagger_position: Point2D) -> AgentAction {
+    valid_moves
+        .iter()
+        .copied()
+        .max_by_key(|valid_move| manhattan_distance(*valid_move, tagger_position))
+        .map(AgentAction::Move)
+        .unwrap_or(AgentAction::Stay)
 }
 
 fn find_valid_moves(grid_view: &[Vec<CellState>], Point2D { x, y }: Point2D) -> Vec<Point2D> {
