@@ -68,3 +68,7 @@ If the simulator engine is extended to track agent behavior, it is possible to a
 The grid state is currently represented as a nested vector that is indexed by `[row][col]`/`[y][x]`.
 This requires knowledge about how to correctly index and also allocation of separate vectors for each row.
 A flat vector representation could be used instead. This would require fewer memory allocations and could be used in combination with a simple indexing API (`index = y * cols + x`) to reduce potential for indexing errors.
+
+### Simulation module organization
+The `simulation` module is quite large and the `impl Simulation` block mixes public API and private helpers.
+Introducing submodules or even just restructuring the `impl` block could improve readability.
