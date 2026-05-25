@@ -98,9 +98,10 @@ fn find_nearest_target(possible_targets: &[Point2D], position: Point2D) -> Optio
         .min_by_key(|target_position| manhattan_distance(position, *target_position))
 }
 
-// TODO: duplication
-// the tagger position could be found while scanning the grid for possible targets,
-// or better: passed from sim as it already has to create the grid view
+// TODO: Looks very similar to find_possible_targets.
+// Maybe they could be combined into a function that takes a predicate to filter on,
+// or the tagger position could be found while scanning the grid for possible targets.
+// Better yet: Simulation already has to create the grid view and could pass the tagger position.
 fn find_tagger_position(grid_view: &[Vec<CellState>]) -> Option<Point2D> {
     let mut tagger_position = None;
     for (y, row) in grid_view.iter().enumerate() {
