@@ -6,7 +6,7 @@ Fangeleg is a small simulator for an agent-based model where agents play the gam
 
 Agents are simulated as autonomous entities that move around a 2D grid and tag each other. At each step of the simulation, agents can move, tag, or remain stationary. Agent behavior is defined via an `Agent` trait, which allows for custom agent implementations.
 
-Currently two agent types are supported: `NaiveAgent` and `CompetentAgent`. Naive agents are simple and do not use any advanced strategies, while competent agents are more sophisticated and employ strategies like chasing nearest target and avoiding the one who is "it".
+Currently two built-in agent types are supported: `NaiveAgent` and `CompetentAgent`. Naive agents are simple and do not use any advanced strategies, while competent agents are more sophisticated and employ strategies like chasing nearest target and avoiding the one who is "it".
 Simulating with only competent agents quickly converges to a "deadlock"-ish state where agents just dance around without ever tagging each other.
 
 The project also includes a web-based visualization of the simulation running in WebAssembly and an API for defining custom agent behaviors using JavaScript. See `web/index.html` for an example of usage and `crates/fangeleg-wasm/src/js_agent.rs` for the Rust-side implementation.
@@ -16,7 +16,12 @@ One agent is "it" and the goal is to tag the other agents. When an agent is tagg
 
 ## Usage
 `just run` to build the project and serve the frontend locally. View the simulation in your browser at `http://localhost:8080`.
-Explore `justfile` for more commands.
+
+Currently this starts a 30x30 simulation with 40 agents that are 50/50 split between competent and naive agents by default.
+The web UI provides buttons for choosing between 100% naive agents, a 50/50 split, or 100% competent agents. Grid size, tick speed, and agent count need to be configured in `web/index.html`.
+A fourth button places a JavaScript-defined agent at (0, 0), but this can fail if the cell is occupied by another agent.
+
+Explore `justfile` for more commands related to building, cleaning, and running the simulation.
 
 Run a simple terminal version with `cargo run -p fangeleg-cli`.
 
@@ -50,6 +55,8 @@ The project is organized into three crates:
 The simulator currently resolves ticks sequentially. Agents act at most once per tick, but each agent observes the grid state as it exists when its turn is processed, so earlier actions in the same tick can affect later decisions.
 
 Due to limitations of `wasm-bindgen`, the `AgentAction` enum is represented as an array on the JavaScript side. Helper functions are exposed to help with this.
+
+The web visualization currently exposes controls for choosing the agent type mix, but grid size, tick speed, and agent count are still configured in `web/index.html`. A future improvement would be to make those values configurable directly in the browser as well. The button for placing a JavaScript-defined agent at (0, 0) can also currently fail if the cell is occupied by another agent.
 
 ## Possible future directions
 
