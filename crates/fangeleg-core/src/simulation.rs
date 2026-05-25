@@ -118,7 +118,6 @@ impl Simulation {
         action: AgentAction,
     ) -> Result<(), SimulationError> {
         match action {
-            // TODO: match struct instead of dotting into fields?
             AgentAction::Move(move_to) => {
                 // Bounds check the new position
                 if move_to.x >= self.cols || move_to.y >= self.rows {
@@ -159,7 +158,6 @@ impl Simulation {
                 // Actually redundant because the later call to find_taggable_positions
                 // returns [] if the agent is not the tagger
                 if self.current_tagger != Some(tagger_id) {
-                    // Should the sim fail? ignore the error?
                     return Ok(());
                 }
 
