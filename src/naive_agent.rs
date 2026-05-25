@@ -17,6 +17,10 @@ impl Agent for NaiveAgent {
         AgentInput {
             position,
             taggable_positions,
+            // NaiveAgent does not care about this.
+            // is_tagger is also implied by taggable_positions
+            grid_view: _,
+            is_tagger: _,
         }: AgentInput,
     ) -> AgentAction {
         if !taggable_positions.is_empty() {

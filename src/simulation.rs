@@ -12,6 +12,8 @@ pub struct Point2D {
 pub struct AgentInput {
     pub position: Point2D,
     pub taggable_positions: Vec<Point2D>,
+    pub grid_view: Vec<Vec<CellState>>,
+    pub is_tagger: bool,
 }
 
 #[derive(Clone, Copy)]
@@ -231,6 +233,8 @@ impl Simulation {
                         // Is cloning the point cheaper than creating a new one?
                         position: point,
                         taggable_positions: self.find_taggable_positions(agent.id, point),
+                        grid_view: self.create_grid_view(),
+                        is_tagger: self.current_tagger == Some(agent.id),
                     };
                     let action = agent.act(input);
                     let _ = self.apply_action(point, action);
@@ -328,6 +332,19 @@ impl Simulation {
         if self.current_tagger.is_none() {
             self.choose_random_tagger();
         }
+    }
+
+    fn create_grid_view(&self) -> Vec<Vec<CellState>> {
+        (0..self.rows)
+            .map(|y| {
+                (0..self.cols)
+                    .map(|x| {
+                        self.cell_state(x, y)
+                            .expect("Out of bounds grid coordinate")
+                    })
+                    .collect()
+            })
+            .collect()
     }
 }
 
