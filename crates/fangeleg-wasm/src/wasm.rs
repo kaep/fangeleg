@@ -2,10 +2,10 @@ use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement};
 
-use crate::competent_agent::CompetentAgent;
 use crate::js_agent::JsAgent;
-use crate::naive_agent::NaiveAgent;
-use crate::simulation::{CellState, Simulation};
+use fangeleg_core::competent_agent::CompetentAgent;
+use fangeleg_core::naive_agent::NaiveAgent;
+use fangeleg_core::simulation::{CellState, Simulation};
 
 const COLOR_BACKGROUND: &str = "#111827";
 const COLOR_GRID: &str = "#374151";

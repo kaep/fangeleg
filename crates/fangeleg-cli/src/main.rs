@@ -1,5 +1,5 @@
-use fangeleg::naive_agent::NaiveAgent;
-use fangeleg::simulation::Simulation;
+use fangeleg_core::naive_agent::NaiveAgent;
+use fangeleg_core::simulation::Simulation;
 
 fn main() {
     let rows = 30;

@@ -1,26 +1,4 @@
-[package]
-name = "fangeleg"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = ["crates/fangeleg-core", "crates/fangeleg-wasm", "crates/fangeleg-cli"]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-rand = "0.10.1"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "=0.2.108"
-getrandom = { version = "0.4.2", features = ["wasm_js"] }
-js-sys = "0.3"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
-version = "0.3"
-features = [
-    "Window",
-    "Document",
-    "HtmlCanvasElement",
-    "CanvasRenderingContext2d",
-    "Element",
-    "console"
-]
+resolver = "3"

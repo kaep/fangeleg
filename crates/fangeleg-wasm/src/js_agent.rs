@@ -1,4 +1,4 @@
-use crate::simulation::{Agent, AgentAction, AgentInput, Point2D};
+use fangeleg_core::simulation::{Agent, AgentAction, AgentInput, Point2D};
 use wasm_bindgen::prelude::*;
 
 const ACTION_STAY: u8 = 0;
