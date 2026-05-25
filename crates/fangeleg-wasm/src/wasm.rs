@@ -104,6 +104,7 @@ impl WasmSimulation {
         self.draw_legend();
     }
 
+    #[wasm_bindgen(js_name = "placeJsAgent")]
     pub fn place_js_agent(&mut self, x: usize, y: usize, act_function: js_sys::Function) -> bool {
         let placed = self
             .simulation

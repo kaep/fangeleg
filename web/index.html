@@ -46,8 +46,8 @@
 
       const sim = new WasmSimulation("simulation", 30, 30, 40, 20);
 
-      sim.place_js_agent(0, 0, jsAgentExample);
-      sim.place_js_agent(0, 6, lazyJsAgent);
+      sim.placeJsAgent(0, 0, jsAgentExample);
+      sim.placeJsAgent(0, 6, lazyJsAgent);
 
       setInterval(() => {
         sim.step();
